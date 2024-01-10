@@ -13,7 +13,8 @@ export function App() {
   const [isSubmit, setIsSubmit] = useState(false);
 
   const onChange = (schema) => {
-    if (schema.type === "columns") {
+
+    if (schema?.type === "columns") {
       let comp = JSON.parse(JSON.stringify(workingSource));
       let allComp = [];
       for (let v of comp?.components) {
@@ -23,8 +24,18 @@ export function App() {
         }
       }
       setWorkingSource({ ...workingSource, components: allComp });
-    } else {
-      setWorkingSource(schema);
+    }
+    else {
+
+      let allComp = [];
+      for (let v of schema?.components) {
+        if (v.type != "file") { allComp.push(v); }
+        else {
+          allComp.push({ type: "file", key: v.key, label: v.label, storage: "base64", image: true, fileSize: "10240KB" });
+        }
+      }
+
+      setWorkingSource({ ...schema, components: allComp });
     }
 
   };

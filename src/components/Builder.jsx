@@ -9,6 +9,7 @@ export function MyForm(props) {
                     props.onChange(p[1]);
                 }}
                 onSaveComponent={(...p) => {
+                    console.log(p)
                     props.onChange(p[2]);
                 }}
                 options={{
