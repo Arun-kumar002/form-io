@@ -63,3 +63,12 @@ export const getFormSavedDataById = async (payload) => {
         console.log("Error:[createGenericForm]", error);
     }
 }
+
+export const getDropDownDataBySelection = async (payload) => {
+    try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/drop-down`);
+        return data;
+    } catch (error) {
+        console.log("Error:[createGenericForm]", error);
+    }
+}
