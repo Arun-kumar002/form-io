@@ -1,13 +1,25 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { getFormSavedDataById } from '../service/generic-form.service'
 
-const Submit = ({ state = {} }) => {
+const Submit = () => {
+    const params = useParams()
+    const [state, setState] = useState({})
+
+    useEffect(() => {
+        const get = async () => {
+            const data = await getFormSavedDataById(params);
+            setState(data)
+
+        }
+        get()
+    }, [params])
     return (
         <div>
-            <p>Form Submitted</p>
+            <p>Form Submitted . Submit id: {params.id}</p>
             {
-                Object.keys(state).map((v) => {
-                    return (<p>Key : {v}  Value:{state?.[v]}</p>)
+                Object.keys(state).map((v, i) => {
+                    return (<p key={i}>Key : {v}  Value:{state?.[v]}</p>)
                 })
             }
 
