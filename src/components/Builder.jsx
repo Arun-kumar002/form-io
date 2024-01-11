@@ -1,7 +1,9 @@
 import React from "react";
 import { FormBuilder } from "react-formio";
+import { useNavigate } from "react-router-dom";
 
 export function Builder(props) {
+    const navigate = useNavigate()
 
     const onChange = (schema) => {
         if (schema?.type === "columns") {
@@ -30,7 +32,7 @@ export function Builder(props) {
 
             props.setWorkingSource({ ...schema, components: all });
         }
-        else if (schema?.type ==="tabs") {
+        else if (schema?.type === "tabs") {
             let allComp = [];
             for (let v of schema?.components) {
                 if (v.type === "file") {
@@ -71,7 +73,8 @@ export function Builder(props) {
     };
 
     return (
-        <div className="App">
+        <div className="App" style={{ padding: "50px" }}>
+
             <FormBuilder
                 form={props.workingSource}
                 onDeleteComponent={(...p) => {
@@ -85,6 +88,9 @@ export function Builder(props) {
                     noDefaultSubmitButton: false
                 }}
             />
+            <button type="button" className="btn btn-primary" onClick={() => navigate("/render")}>
+                Save
+            </button>
         </div>
     );
 }

@@ -1,27 +1,26 @@
 import React, { useState } from "react";
 import Render from "./components/Render";
 import { Builder } from "./components/Builder";
-
+import { Routes, Route, useNavigate } from "react-router-dom";
+import Submit from "./components/Submit";
 export function App() {
 
+  let [state, setState] = useState({})
   const [workingSource, setWorkingSource] = useState({
     display: "form",
     components: [],
     columns: []
   });
 
-  const [isSubmit, setIsSubmit] = useState(false);
-
-
 
   return (
     <div className="App">
-      {!isSubmit ? <><Builder setWorkingSource={setWorkingSource} workingSource={workingSource} /></> : <></>}
-      {isSubmit ? <Render components={workingSource} /> : <></>}
+      <Routes>
+        <Route path="/" element={<Builder setWorkingSource={setWorkingSource} workingSource={workingSource} />} />
+        <Route path="/render" element={<Render setState={setState} components={workingSource} />} />
+        <Route path="/submit" element={<Submit state={state} />} />
+      </Routes>
 
-      <button type="button" className="btn btn-primary" onClick={() => setIsSubmit(!isSubmit)}>
-        Save
-      </button>
     </div>
   );
 }

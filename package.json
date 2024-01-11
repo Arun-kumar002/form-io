@@ -9,9 +9,9 @@
     "react": "16.14.0",
     "react-dom": "16.14.0",
     "react-formio": "5.0.0-rc.1",
+    "react-router-dom": "^6.21.1",
     "react-scripts": "3.4.0"
   },
-  "devDependencies": {},
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
