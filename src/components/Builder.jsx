@@ -1,24 +1,43 @@
-import React, { useState } from "react";
-import { FormBuilder } from "react-formio";
-import { useNavigate } from "react-router-dom";
-import { createGenericForm } from "../service/generic-form.service";
+import React, { useEffect, useState } from "react";
+import { FormBuilder, Formio } from "react-formio";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { createGenericForm, getGenericFormById } from "../service/generic-form.service";
 
 export function Builder() {
     const navigate = useNavigate()
     let [state, setState] = useState({})
-    let [form, setForm] = useState({})
+    let [form, setForm] = useState({ display: "form" })
+    const [params] = useSearchParams();
+    let [isRender, setIsRender] = useState(false)
 
+    useEffect(() => {
+        if (params.get("id")) {
+            const get = async () => {
+                const data = await getGenericFormById({ id: params.get("id") });
+                setState(data.schema)
+                setIsRender(!isRender)
+            }
+            get()
+        }
+
+    }, [])
+
+    useEffect(() => {
+        Formio.builder(document.querySelector('#builder'), { components: state.components || [] }, {}).then(builder => {
+            builder.on('saveComponent', function () {
+                setState(prevState => ({ ...prevState, components: builder.schema.components }));
+            });
+
+        });
+
+    }, [isRender])
     return (
         <div className="App" style={{ padding: "50px" }}>
             <div style={{ marginBottom: "20px", display: "flex", gap: "20px" }}>
                 <p>Enter form name</p>
                 <input name="form-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
-            <FormBuilder
-                form={{ display: "form" }}
-                onChange={schema => { setState(schema) }}
-
-            />
+            <div id="builder"></div>
             <button type="button" className="btn btn-primary" onClick={async () => {
                 let data = await createGenericForm({ ...form, schema: state });
                 navigate(`/render/${data.id}`)

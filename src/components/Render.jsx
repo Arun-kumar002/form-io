@@ -1,18 +1,18 @@
 
 import React, { useEffect, useState } from 'react'
-import { Formio, eachComponent } from 'formiojs';
+import { Formio } from 'formiojs';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getDropDownDataBySelection, getFormDropDownConfigByFormId, getFormValidationByFormId, getGenericFormById, saveFormData } from '../service/generic-form.service';
 import SweetAlert2 from 'react-sweetalert2';
 import moment from 'moment';
 
 const CustomForm = () => {
-    const navigate = useNavigate()
-    const params = useParams()
-    const [swalProps, setSwalProps] = useState({});
+    const navigate = useNavigate();
+    const params = useParams();
     const [formConfig, setFormConfig] = useState([]);
-    const [isRender, setIsRender] = useState(false);
     const [validation, setValidation] = useState([]);
+    const [swalProps, setSwalProps] = useState({});
+    const [isRender, setIsRender] = useState(false);
 
 
     useEffect(() => {
@@ -118,7 +118,7 @@ const CustomForm = () => {
                                 const dateTwo = moment(data[x["dateOut"]]);
                                 let tag = document.querySelector(`#${x["dateIn"]}`)
                                 if (tag) {
-                                    tag.innerHTML = `<p>${x["dateIn"]} & ${x["dateOut"]} difference ${dateOne.diff(dateTwo, "days")} days</p>`;
+                                    tag.innerHTML = `<p>${x["dateIn"]} & ${x["dateOut"]} difference ${dateTwo.diff(dateOne, "days")} days</p>`;
                                 }
                             }
                         }

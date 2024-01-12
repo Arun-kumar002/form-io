@@ -18,6 +18,7 @@ export const getGenericForm = async () => {
     }
 }
 
+
 export const getGenericFormById = async (payload) => {
     try {
         const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/generic-form/${payload.id}`);
