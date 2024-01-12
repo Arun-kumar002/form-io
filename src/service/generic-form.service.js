@@ -64,9 +64,28 @@ export const getFormSavedDataById = async (payload) => {
     }
 }
 
-export const getDropDownDataBySelection = async (payload) => {
+export const getDropDownDataBySelection = async (config, select) => {
     try {
-        const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/drop-down`);
+        const payload = JSON.parse(config?.payload?.replace(new RegExp("\\[" + config.inputKey + "\\]", "g"), select?.value));
+        const { data } = await axios.get(config?.apiDataEndpoint, { params: payload });
+        return data;
+    } catch (error) {
+        console.log("Error:[createGenericForm]", error);
+    }
+}
+
+export const getFormValidationByFormId = async (payload) => {
+    try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/form-validation?formId=${payload.id}`);
+        return data;
+    } catch (error) {
+        console.log("Error:[createGenericForm]", error);
+    }
+}
+
+export const getFormDropDownConfigByFormId = async (payload) => {
+    try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/form-config?formId=${payload.id}`);
         return data;
     } catch (error) {
         console.log("Error:[createGenericForm]", error);

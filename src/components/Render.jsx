@@ -2,13 +2,32 @@
 import React, { useEffect, useState } from 'react'
 import { Formio, eachComponent } from 'formiojs';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getDropDownDataBySelection, getGenericFormById, saveFormData } from '../service/generic-form.service';
+import { getDropDownDataBySelection, getFormDropDownConfigByFormId, getFormValidationByFormId, getGenericFormById, saveFormData } from '../service/generic-form.service';
 import SweetAlert2 from 'react-sweetalert2';
+import moment from 'moment';
 
 const CustomForm = () => {
     const navigate = useNavigate()
     const params = useParams()
     const [swalProps, setSwalProps] = useState({});
+    const [formConfig, setFormConfig] = useState([]);
+    const [isRender, setIsRender] = useState(false);
+    const [validation, setValidation] = useState([]);
+
+
+    useEffect(() => {
+        if (params.id) {
+            const get = async () => {
+                const formData = await getFormDropDownConfigByFormId(params);
+                setFormConfig(formData)
+                const validationData = await getFormValidationByFormId(params);
+                setValidation(validationData)
+                setIsRender(!isRender)
+            }
+            get()
+        }
+
+    }, [params])
 
     useEffect(() => {
 
@@ -16,17 +35,52 @@ const CustomForm = () => {
             readOnly: false,
             noAlerts: false,
             hooks: {
-                customValidation: (submission, next) => {
+                customValidation: async (submission, next) => {
+                    const data = submission.data;
+                    if (Array.isArray(validation)) {
+                        for (let x of validation) {
+                            if (x.type == "formula") {
+                                const func = new Function("obj", `${x.formula}`);
+                                const result = func(submission.data);
+                                if (!result) {
+                                    return next({
+                                        message: x?.errorMessage,
+                                        details: [{
+                                            message: x?.errorMessage,
+                                            path: [x?.key],
+                                            level: 'error'
+                                        }]
+                                    })
+                                }
+                            }
+                            else if (x.type == "date" && x["dateIn"] && x["dateOut"]) {
+                                const dateOne = moment(data[x["dateIn"]]);
+                                const dateTwo = moment(data[x["dateOut"]]);
 
-                    next()
-                    // return next({
-                    //     message: 'The value of the first text field is incorrect',
-                    //     details: [{
-                    //         message: 'The value of the first text field is incorrect',
-                    //         path: ['textField'],
-                    //         level: 'error'
-                    //     }]
-                    // });
+                                if (!dateOne.isBefore(dateTwo)) {
+                                    return next({
+                                        message: `${x["dateIn"]} should be greater of  ${x["dateOut"]}`,
+                                        details: [{
+                                            message: `${x["dateIn"]} should be greater of ${x["dateOut"]}`,
+                                            path: [x["dateIn"]],
+                                            level: 'error'
+                                        }]
+                                    })
+                                } else if (dateOne.isSame(dateTwo)) {
+                                    return next({
+                                        message: `${x["dateIn"]} & ${x["dateOut"]} should not be the same.`,
+                                        details: [{
+                                            message: `${x["dateIn"]} & ${x["dateOut"]} should not be the same.`,
+                                            path: [x["dateIn"]],
+                                            level: 'error'
+                                        }]
+                                    })
+                                }
+                            }
+                        }
+                    }
+
+                    return next();
                 }
             }
         };
@@ -35,16 +89,25 @@ const CustomForm = () => {
         const get = async () => {
             const data = await getGenericFormById(params);
             Formio.createForm(document.getElementById("formio"), data.schema, formSettings).then(form => {
-
                 form.on('change', async function (event) {
-
-                    const secondSelect = form.getComponent('select1');
-                    if (secondSelect && secondSelect.info && secondSelect.info.component && secondSelect.info.component.data) {
-                        const data = await getDropDownDataBySelection()
-                        secondSelect.info.component.data.values = data;
-                        form.redraw();
+                    console.log(event)
+                    const data = event.data;
+                    let updateConfig = []
+                    for (let config of formConfig) {
+                        if (config.type == "select" && data.hasOwnProperty(config.inputKey) && config?.previous != data[config.inputKey].value) {
+                            const dropDownData = await getDropDownDataBySelection(config, data[config.inputKey])
+                            const secondSelect = form.getComponent(config.outputKey);
+                            if (secondSelect && secondSelect.info && secondSelect.info.component && secondSelect.info.component.data) {
+                                secondSelect.info.component.data.values = dropDownData;
+                                form.redraw();
+                            }
+                            config.previous = data[config?.inputKey]?.value
+                            updateConfig.push(config)
+                        } else {
+                            updateConfig.push(config)
+                        }
                     }
-
+                    setFormConfig(updateConfig);
                 });
 
 
@@ -62,9 +125,9 @@ const CustomForm = () => {
                 });
             });
         }
-        get()
+        get();
 
-    }, [params]);
+    }, [params, isRender]);
 
 
     return (
