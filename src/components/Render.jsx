@@ -53,7 +53,7 @@ const CustomForm = () => {
                                     })
                                 }
                             }
-                            else if (x.type == "date" && x["dateIn"] && x["dateOut"]) {
+                            else if (x.type == "date" && data[x["dateIn"]] && data[x["dateOut"]]) {
                                 const dateOne = moment(data[x["dateIn"]]);
                                 const dateTwo = moment(data[x["dateOut"]]);
 
@@ -90,7 +90,6 @@ const CustomForm = () => {
             const data = await getGenericFormById(params);
             Formio.createForm(document.getElementById("formio"), data.schema, formSettings).then(form => {
                 form.on('change', async function (event) {
-                    console.log(event)
                     const data = event.data;
                     let updateConfig = []
                     for (let config of formConfig) {
@@ -98,7 +97,9 @@ const CustomForm = () => {
                             const dropDownData = await getDropDownDataBySelection(config, data[config.inputKey])
                             const secondSelect = form.getComponent(config.outputKey);
                             if (secondSelect && secondSelect.info && secondSelect.info.component && secondSelect.info.component.data) {
+                                console.log(secondSelect)
                                 secondSelect.info.component.data.values = dropDownData;
+                                event.data[config.outputKey] = ""
                                 form.redraw();
                             }
                             config.previous = data[config?.inputKey]?.value
@@ -107,7 +108,21 @@ const CustomForm = () => {
                             updateConfig.push(config)
                         }
                     }
+
                     setFormConfig(updateConfig);
+
+                    if (Array.isArray(validation)) {
+                        for (let x of validation) {
+                            if (x.type == "date" && data[x["dateIn"]] && data[x["dateOut"]]) {
+                                const dateOne = moment(data[x["dateIn"]]);
+                                const dateTwo = moment(data[x["dateOut"]]);
+                                let tag = document.querySelector(`#${x["dateIn"]}`)
+                                if (tag) {
+                                    tag.innerHTML = `<p>${x["dateIn"]} & ${x["dateOut"]} difference ${dateOne.diff(dateTwo, "days")} days</p>`;
+                                }
+                            }
+                        }
+                    }
                 });
 
 
