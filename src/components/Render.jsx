@@ -82,61 +82,102 @@ const CustomForm = () => {
 
                     return next();
                 }
-            }
+            },
+            // formState: {
+            //     data: {
+            //         "users": "",
+            //         "textArea": "test",
+            //         "textField": "arun1@gmail.com",
+            //         "submit": true
+            //     }
+            // }
         };
 
 
         const get = async () => {
             const data = await getGenericFormById(params);
             Formio.createForm(document.getElementById("formio"), data.schema, formSettings).then(form => {
-                form.on('change', async function (event) {
-                    const data = event.data;
-                    let updateConfig = []
-                    for (let config of formConfig) {
-                        if (config.type == "select" && data.hasOwnProperty(config.inputKey) && config?.previous != data[config.inputKey].value) {
-                            const dropDownData = await getDropDownDataBySelection(config, data[config.inputKey])
-                            const secondSelect = form.getComponent(config.outputKey);
-                            if (secondSelect && secondSelect.info && secondSelect.info.component && secondSelect.info.component.data) {
-                                console.log(secondSelect)
-                                secondSelect.info.component.data.values = dropDownData;
-                                event.data[config.outputKey] = ""
-                                form.redraw();
-                            }
-                            config.previous = data[config?.inputKey]?.value
-                            updateConfig.push(config)
-                        } else {
-                            updateConfig.push(config)
-                        }
-                    }
+                // form.setData();
+                // form.on('change', async function (event) {
+                //     const data = event.data;
+                //     let updateConfig = []
+                //     for (let config of formConfig) {
+                //         if (config.type == "select" && data.hasOwnProperty(config.inputKey) && config?.previous != data[config.inputKey].value) {
+                //             const dropDownData = await getDropDownDataBySelection(config, data[config.inputKey])
+                //             const secondSelect = form.getComponent(config.outputKey);
+                //             if (secondSelect && secondSelect.info && secondSelect.info.component && secondSelect.info.component.data) {
+                //                 console.log(secondSelect)
+                //                 secondSelect.info.component.data.values = dropDownData;
+                //                 event.data[config.outputKey] = ""
+                //                 form.redraw();
+                //             }
+                //             config.previous = data[config?.inputKey]?.value
+                //             updateConfig.push(config)
+                //         } else {
+                //             updateConfig.push(config)
+                //         }
+                //     }
 
-                    setFormConfig(updateConfig);
+                //     setFormConfig(updateConfig);
 
-                    if (Array.isArray(validation)) {
-                        for (let x of validation) {
-                            if (x.type == "date" && data[x["dateIn"]] && data[x["dateOut"]]) {
-                                const dateOne = moment(data[x["dateIn"]]);
-                                const dateTwo = moment(data[x["dateOut"]]);
-                                let tag = document.querySelector(`#${x["dateIn"]}`)
-                                if (tag) {
-                                    tag.innerHTML = `<p>${x["dateIn"]} & ${x["dateOut"]} difference ${dateTwo.diff(dateOne, "days")} days</p>`;
-                                }
-                            }
-                        }
-                    }
+                //     if (Array.isArray(validation)) {
+                //         for (let x of validation) {
+                //             if (x.type == "date" && data[x["dateIn"]] && data[x["dateOut"]]) {
+                //                 const dateOne = moment(data[x["dateIn"]]);
+                //                 const dateTwo = moment(data[x["dateOut"]]);
+                //                 let tag = document.querySelector(`#${x["dateIn"]}`)
+                //                 if (tag) {
+                //                     tag.innerHTML = `<p>${x["dateIn"]} & ${x["dateOut"]} difference ${dateTwo.diff(dateOne, "days")} days</p>`;
+                //                 }
+                //             }
+                //         }
+                //     }
+                // });
+
+                // form.submission = {
+                //     data: {
+                //         "outlet": {
+                //             "label": "outlet1",
+                //             "key": "outlet1",
+                //             "value": "123",
+                //             "id": "d4c5"
+                //         },
+                //         "users": "",
+                //         "textArea": "test",
+                //         "textField": "arun1@gmail.com",
+                //         "submit": true
+                //     }
+                // }
+
+                // form.everyComponent((component) => {
+                //     if (component.type === 'components') {
+                //         component?.everyComponent((childComponent) => {
+                //             childComponent.disabled = true;
+                //         });
+                //     } else {
+                //         component.disabled = true;
+                //     }
+                // });
+             
+                form.on("submit", async function (submission) {
+                    console.log(submission.data)
+                    // let data = await saveFormData(submission.data)
+
+                    // setSwalProps({
+                    //     show: true,
+                    //     title: 'Form successfully submitted.',
+                    //     text: `Submit id : ${data.id}`,
+                    // });
+
+                    // navigate(`/submit/${data.id}`)
                 });
 
+                form.on('error', (errors) => {
+                    console.error('Form validation errors:', errors);
+                });
 
-
-                form.on("submit", async function (submission) {
-                    let data = await saveFormData(submission.data)
-
-                    setSwalProps({
-                        show: true,
-                        title: 'Form successfully submitted.',
-                        text: `Submit id : ${data.id}`,
-                    });
-
-                    navigate(`/submit/${data.id}`)
+                form.on('render', () => {
+                    console.log('Form rendered');
                 });
             });
         }
